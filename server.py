@@ -10,7 +10,7 @@ from gi.repository import Gst, GstRtspServer, GObject
 
 def get_ip_address(ifname):
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', ifname[:15]))[20:24])
+	return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', bytes(ifname[:15], 'utf-8')))[20:24])
 
 
 class SensorFactory(GstRtspServer.RTSPMediaFactory):
@@ -68,7 +68,7 @@ class GstServer(GstRtspServer.RTSPServer):
 		auth = GstRtspServer.RTSPAuth()
 		token = GstRtspServer.RTSPToken()
 		token.set_string('media.factory.role', "admin")
-		basic = GstRtspServer.RTSPAuth.make_basic("admin", "1234")
+		basic = GstRtspServer.RTSPAuth.make_basic("admin", "tmzkdltltm123")
 		auth.add_basic(basic, token)
 		self.server.set_auth(auth)
 
@@ -78,10 +78,10 @@ class GstServer(GstRtspServer.RTSPServer):
 
 		self.factory.set_permissions(permissions)
 		self.server.attach(None)
-		# cur_ip = get_ip_address('eth0')
-		cur_ip = "192.168.88.24"
+		cur_ip = get_ip_address('eth0')
+		# cur_ip = "192.168.88.24"
 		# print(cur_ip)
-		print('#Gst Server: http://{}:{}{}'.format(cur_ip, port, sub_dir))
+		print('#Gst Server: rtsp://admin:tmzkdltltm123@{}:{}{}'.format(cur_ip, port, sub_dir))
 
 	def run(self):
 		loop = GObject.MainLoop()

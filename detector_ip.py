@@ -228,7 +228,7 @@ class IpVideoCapture:
 		self.cap = cv2.VideoCapture(name)
 		self.q = queue.Queue()
 		t = threading.Thread(target=self._reader)
-		# t.daemon = True
+		t.daemon = True
 		t.start()
 
 	def _reader(self):
@@ -247,19 +247,14 @@ class IpVideoCapture:
 		return True, self.q.get()
 
 
-class detector:
+class Detector:
 	def __init__(self, init_img, camera, factor=0.5):
-		# self.net = load_net("darknet/cfg/yolov4-tiny.cfg", "darknet/backup/yolov4-tiny.weights",0)
-		# self.meta = load_meta("darknet/cfg/voc.data")
 		path = 'darknet/'
-		# cfg_path = path+'cfg/yolov4-tiny.cfg'
-		cfg_path = path + 'cfg/yolov4-csp.cfg'
-		# weight_path = path + 'backup/v4tiny_last_210311.weights'  # Hyndai
-		weight_path = path + 'backup/yolov4-csp.weights'
+		cfg_path = path + 'cfg/yolov4-custom-csp.cfg'
+		weight_path = path + 'backup/yolov4-custom-csp.weights'
 		meta_path = path + 'cfg/coco.data'
-		self.net = darknet.load_net_custom(cfg_path.encode('utf-8'), weight_path.encode('utf-8'), 0, 1)
-		self.darknet_image = darknet.make_image(darknet.network_width(self.net), darknet.network_height(self.net), 3)
-		self.meta = darknet.load_meta(meta_path.encode('utf-8'))
+		self.network, self.class_names, self.colors = darknet.load_network(cfg_path, meta_path, weight_path)
+		self.darknet_image = darknet.make_image(darknet.network_width(self.network), darknet.network_height(self.network), 3)
 		self.prev_frame = init_img
 		self.blending_factor = factor
 		self.prev_results = []
@@ -271,24 +266,17 @@ class detector:
 
 	def detect_img(self, image):
 		frame_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-		frame_resized = cv2.resize(frame_rgb, (darknet.network_width(self.net),	darknet.network_height(self.net)), cv2.INTER_LINEAR)
+		frame_resized = cv2.resize(frame_rgb, (darknet.network_width(self.network),	darknet.network_height(self.network)), cv2.INTER_LINEAR)
 		darknet.copy_image_from_bytes(self.darknet_image, frame_resized.tobytes())
-		meta_results = darknet.detect_image(self.net, self.meta, self.darknet_image, thresh=0.3)
-
+		meta_results = darknet.detect_image(self.network, self.class_names, self.darknet_image, thresh=0.3)
 		results = []
 		h, w, c = frame_resized.shape
+
 		for i in meta_results:
 			if i[0] == 'person':
 				results.append([i[0], [i[2][0]/w, i[2][1]/h, i[2][2]/w, i[2][3]/h]])
 
 		return results
-
-	# def is_human(self, image):
-	# 	meta_results = detect_np(self.net, self.meta, image, thresh=0.02)
-	# 	for i in meta_results:
-	# 		if i[0] == 'person':
-	# 			return True
-	# 	return False
 
 	def detect_imgs(self, images):
 		results = []
@@ -401,17 +389,17 @@ class detector:
 
 
 if __name__ == '__main__':
-	cam_url = 'rtsp://admin:tmzkdltltm123@192.168.88.25/profile2/media.smp'
-	# cam_url = 0
+	# cam_url = 'rtsp://admin:tmzkdltltm123@192.168.88.25:554/profile2/media.smp'
+	cam_url = "./test.mp4"
 
 	blending_factor = 0.5
 	cam = IpVideoCapture(cam_url)
 	init_image = np.zeros((HEIGHT, WIDTH, 3), np.uint8)
 	init_image[:, :] = (0, 0, 0)
 
-	detector = detector(init_image, cam, blending_factor)
+	detector = Detector(init_image, cam, blending_factor)
 	t = threading.Thread(target=detector.main_loop)
-	# t.daemon = True
+	t.daemon = True
 	t.start()
 
 	origin_server = GstServer(sub_dir='/origin', port=8554)
