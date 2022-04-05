@@ -68,7 +68,7 @@ class GstServer(GstRtspServer.RTSPServer):
 		auth = GstRtspServer.RTSPAuth()
 		token = GstRtspServer.RTSPToken()
 		token.set_string('media.factory.role', "admin")
-		basic = GstRtspServer.RTSPAuth.make_basic("admin", "tmzkdltltm123")
+		basic = GstRtspServer.RTSPAuth.make_basic("admin", "tmzkdl123")
 		auth.add_basic(basic, token)
 		self.server.set_auth(auth)
 
@@ -81,7 +81,7 @@ class GstServer(GstRtspServer.RTSPServer):
 		cur_ip = get_ip_address('eth0')
 		# cur_ip = "192.168.88.24"
 		# print(cur_ip)
-		print('#Gst Server: rtsp://admin:tmzkdltltm123@{}:{}{}'.format(cur_ip, port, sub_dir))
+		print('#Gst Server: rtsp://admin:tmzkdl123@{}:{}{}'.format(cur_ip, port, sub_dir))
 
 	def run(self):
 		loop = GObject.MainLoop()
