@@ -9,5 +9,12 @@ pip install opencv-python
 3.Install numpy
 pip install numpy
 
-4.RUN program
+4.Install gi
+sudo apt install libcairo2-dev
+sudo apt install libxt-dev
+sudo apt install libgirepository1.0-dev
+pip install pycairo
+pip install PyGObject
+
+RUN program
 python detector.py
