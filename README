@@ -7,7 +7,7 @@ open darknet.py and change libdarknet.so's path
 pip install opencv-python
 
 3.Install numpy
-pip install numpy
+pip install numpy==1.19.4
 
 4.Install gi
 sudo apt install libcairo2-dev
