@@ -109,7 +109,7 @@ class IpVideoCapture:
 
 class Detector:
     def __init__(self, init_img, camera, factor=0.5):
-        path = 'darknet/'
+        path = '/home/skysys/humanless/darknet/'
         cfg_path = path + 'cfg/yolov4-csp.cfg'
         weight_path = path + 'backup/yolov4-csp.weights'
         # cfg_path = path + 'cfg/yolov4-custom-csp.cfg'
