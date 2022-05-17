@@ -3,11 +3,15 @@ cd darknet
 make -j 8
 open darknet.py and change libdarknet.so's path
 
-2.Install opencv-python
-pip install opencv-python
+2.Install requirements.txt
+pip install -r requirements.txt
 
-3.Install numpy
-pip install numpy
+3.Install gi
+sudo apt install libcairo2-dev
+sudo apt install libxt-dev
+sudo apt install libgirepository1.0-dev
+pip install pycairo
+pip install PyGObject
 
-4.RUN program
+RUN program
 python detector.py
