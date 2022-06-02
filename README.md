@@ -21,7 +21,7 @@ pip3 install PyGObject
 python3 detector.py
 
 
-## CCTV PTZ
+## CCTV PTZ Control(Onvif)
 your cctv url insert
 select PTZ Control
 
