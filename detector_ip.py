@@ -3,14 +3,10 @@ import numpy as np
 import itertools
 import threading
 import darknet
-import random
 import queue
 import time
 import copy
-import sys
 import cv2
-
-sys.path.insert(0, '/home/skysys/humanless')
 
 WIDTH = 1920
 HEIGHT = 1080
@@ -43,16 +39,6 @@ def union(rect_a, rect_b):  # create bounding box for rect A & B
     x = start_x + w / 2
     y = start_y + h / 2
     return [x, y, w, h]
-
-
-def combine_boxes2(boxes):
-    new_array = []
-    for box_a, box_b in itertools.combinations(boxes, 2):
-        if intersection(box_a[1], box_b[1]):
-            new_array.append([box_a[0], union(box_a[1], box_b[1])])
-        else:
-            new_array.append(box_a)
-    return new_array
 
 
 def combine_boxes(rect):
@@ -108,7 +94,7 @@ class IpVideoCapture:
 
 
 class Detector:
-    def __init__(self, init_img, camera, factor=0.5):
+    def __init__(self, init_img, camera, factor=0.5, ar_marker=False):
         path = '/home/skysys/humanless/darknet/'
         cfg_path = path + 'cfg/yolov4-csp.cfg'
         weight_path = path + 'backup/yolov4-csp.weights'
@@ -126,6 +112,7 @@ class Detector:
         self.finish = False
         self.result = init_img
         self.origin = init_img
+        self.ar_marker = ar_marker
 
     def detect_img(self, image):
         frame_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -192,22 +179,22 @@ class Detector:
         return dst
 
     # mosaic
-    # def update_prev_frame(self, frame, results):
-    # 	_h, _w, _c = frame.shape
-    # 	for i in results:
-    # 		w = int(i[1][2] * _w * self.factor)
-    # 		h = int(i[1][3] * _h * self.factor)
-    # 		x = int(i[1][0] * _w - w/2)
-    # 		y = int(i[1][1] * _h - h/2)
-    # 		if x < 0:
-    # 			x = 0
-    # 		elif x + h > _w:
-    # 			w = _w - x
-    # 		if y < 0:
-    # 			y = 0
-    # 		elif y + h > _h:
-    # 			h = _h - y
-    # 		self.result = self.mosaic_area(frame, x, y, w, h)
+    def update_prev_frame(self, frame, results):
+        _h, _w, _c = frame.shape
+        for i in results:
+            w = int(i[1][2] * _w * self.factor)
+            h = int(i[1][3] * _h * self.factor)
+            x = int(i[1][0] * _w - w/2)
+            y = int(i[1][1] * _h - h/2)
+            if x < 0:
+                x = 0
+            elif x + h > _w:
+                w = _w - x
+            if y < 0:
+                y = 0
+            elif y + h > _h:
+                h = _h - y
+            self.result = self.mosaic_area(frame, x, y, w, h)
 
     # humanless
     def update_prev_frame(self, frame, results):
@@ -219,7 +206,6 @@ class Detector:
             h = int(i[1][3] * _h * self.factor)
             x = int(i[1][0] * _w - w / 2)
             y = int(i[1][1] * _h - h / 2)
-            # print("w, h, x, y", w, h, x, y)
             if x < 0:
                 x = 0
             elif x + h > _w:
@@ -263,26 +249,27 @@ class Detector:
             print("Person {} location : {}, {}".format(idx + 1, x, y))
 
     # mosaic
-    # def main_loop(self):
-    # 	while True:
-    # 		ret, frame = self.cam.read()
-    # 		if not ret:
-    # 			continue
-    # 		image = cv2.resize(frame, (WIDTH, HEIGHT))
-    # 		res = self.detect_img(image)
-    # 		for t in self.prev_results:
-    # 			print(t)
-    # 			for i in t:
-    # 				res.append(i)
-    # 		meta_result = image.copy()
-    # 		self.origin = meta_result
-    # 		self.result = meta_result
-    # 		self.update_prev_frame(image.copy(), res)
+    def main_loop(self):
+        while True:
+            ret, frame = self.cam.read()
+            if not ret:
+                continue
+            image = cv2.resize(frame, (WIDTH, HEIGHT))
+            res = self.detect_img(image)
+            for t in self.prev_results:
+                print(t)
+                for i in t:
+                    res.append(i)
+            meta_result = image.copy()
+            self.origin = meta_result
+            self.result = meta_result
+            self.update_prev_frame(image.copy(), res)
 
     # humanless
     def main_loop(self):
-        aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_7X7_1000)
-        parameters = cv2.aruco.DetectorParameters_create()
+        if self.ar_marker:
+            aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_7X7_1000)
+            parameters = cv2.aruco.DetectorParameters_create()
         while True:
             ret, frame = self.cam.read()
             if not ret:
@@ -296,9 +283,10 @@ class Detector:
                     res.append(i)
             meta_result = image.copy()
             # AR 마커 인식
-            # gray = cv2.cvtColor(meta_result, cv2.COLOR_BGR2GRAY)
-            # corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
-            # meta_result = cv2.aruco.drawDetectedMarkers(meta_result.copy(), corners, ids)
+            if self.ar_marker:
+                gray = cv2.cvtColor(meta_result, cv2.COLOR_BGR2GRAY)
+                corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+                meta_result = cv2.aruco.drawDetectedMarkers(meta_result.copy(), corners, ids)
             self.origin = meta_result
             self.update_prev_frame(image.copy(), res)
             wr_result = cv2.hconcat([meta_result, self.prev_frame])
@@ -312,7 +300,6 @@ class Detector:
 
 if __name__ == '__main__':
     cam_url = "rtsp://admin:tmzkdl123$@192.168.88.23/profile2/media.smp"
-    # cam_url = "./test3.mp4"
 
     blending_factor = 0.5
     cam = IpVideoCapture(cam_url)
