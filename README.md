@@ -1,4 +1,4 @@
-# Disappearing-People - Person removal from complex backgrounds over time.
+# Person removal from complex backgrounds over time.
 Removing people from complex backgrounds in real time using Darknet(YoloV4) using Python.
 
 ## Install
