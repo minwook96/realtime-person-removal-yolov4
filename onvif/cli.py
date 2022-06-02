@@ -1,11 +1,10 @@
 #!/usr/bin/python
-'''ONVIF Client Command Line Interface'''
+"""ONVIF Client Command Line Interface"""
 from __future__ import print_function, division
 import re
 from cmd import Cmd
 from ast import literal_eval
 from argparse import ArgumentParser, REMAINDER
-
 from zeep.exceptions import LookupError as MethodNotFound
 from zeep.xsd import String as Text
 from onvif import ONVIFCamera, ONVIFService, ONVIFError
@@ -31,12 +30,11 @@ class ONVIFCLI(Cmd):
     cmd_parser = None
 
     def setup(self, args):
-        ''' `args`: Instance of `argparse.ArgumentParser` '''
+        """ `args`: Instance of `argparse.ArgumentParser` """
         # Create onvif camera client
         self.client = ONVIFCamera(args.host, args.port,
                                   args.user, args.password,
                                   args.wsdl, encrypt=args.encrypt)
-
 
         # Create cmd argument parser
         self.create_cmd_parser()
@@ -51,7 +49,7 @@ class ONVIFCLI(Cmd):
         self.cmd_parser = cmd_parser
 
     def do_cmd(self, line):
-        '''Usage: CMD service operation [parameters]'''
+        """Usage: CMD service operation [parameters]"""
         try:
             args = self.cmd_parser.parse_args(line.split())
         except ValueError as err:
@@ -116,8 +114,7 @@ def create_parser():
     parser.add_argument('service', nargs='?',
                         help='Service defined by ONVIF WSDL document')
     parser.add_argument('operation', nargs='?', default='',
-                        help='Operation to be execute defined'
-                                          ' by ONVIF WSDL document')
+                        help='Operation to be execute defined by ONVIF WSDL document')
     parser.add_argument('params', default='', nargs='?',
                         help='JSON format params passed to the operation.'
                              'E.g., "{"Name": "NewHostName"}"')
@@ -163,6 +160,7 @@ def main():
     # Execute command specified and exit
     else:
         cli.cmdloop()
+
 
 if __name__ == '__main__':
     main()

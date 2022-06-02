@@ -72,16 +72,14 @@ class IpVideoCapture:
         while True:
             ret, frame = self.cap.read()
 
-            # video
             self.frame_counter += 1
             # If the last frame is reached, reset the capture and the frame_counter
             if self.frame_counter == self.cap.get(cv2.CAP_PROP_FRAME_COUNT):
                 self.frame_counter = 0  # Or whatever as long as it is the same as next line
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-            # live
-            # if not ret:
-            # 	break
+            if not ret:
+                break
             if not self.q.empty():
                 try:
                     self.q.get_nowait()  # discard previous (unprocessed) frame
@@ -167,11 +165,10 @@ class Detector:
         return frame
 
     def mosaic(self, src, ratio=0.1):
+        # small = cv2.resize(src, None, fx=ratio, fy=ratio, interpolation=cv2.INTER_NEAREST)
+        # return cv2.resize(small, src.shape[:2][::-1], interpolation=cv2.INTER_NEAREST)
         small = cv2.resize(src, None, fx=ratio, fy=ratio)
         return cv2.resize(small, src.shape[:2][::-1], interpolation=cv2.INTER_AREA)
-
-    # small = cv2.resize(src, None, fx=ratio, fy=ratio, interpolation=cv2.INTER_NEAREST)
-    # return cv2.resize(small, src.shape[:2][::-1], interpolation=cv2.INTER_NEAREST)
 
     def mosaic_area(self, src, x, y, width, height, ratio=0.1):
         dst = src.copy()
@@ -179,7 +176,7 @@ class Detector:
         return dst
 
     # mosaic
-    def update_prev_frame(self, frame, results):
+    def update_prev_frame_mosaic(self, frame, results):
         _h, _w, _c = frame.shape
         for i in results:
             w = int(i[1][2] * _w * self.factor)

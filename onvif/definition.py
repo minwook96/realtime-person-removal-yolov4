@@ -14,7 +14,7 @@ SERVICES = {
         'search'       : {'ns': 'http://www.onvif.org/ver10/search/wsdl',    'wsdl': 'search.wsdl',     'binding' : 'SearchBinding'},
         'replay'       : {'ns': 'http://www.onvif.org/ver10/replay/wsdl',    'wsdl': 'replay.wsdl',     'binding' : 'ReplayBinding'},
         'receiver'     : {'ns': 'http://www.onvif.org/ver10/receiver/wsdl',  'wsdl': 'receiver.wsdl',   'binding' : 'ReceiverBinding'},
-        }
+}
 
 #
 #NSMAP = { }

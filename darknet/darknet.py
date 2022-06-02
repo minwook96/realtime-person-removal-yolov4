@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Python 3 wrapper for identifying objects in images
 
@@ -7,9 +6,8 @@ Running the script requires opencv-python to be installed (`pip install opencv-p
 Directly viewing or returning bounding-boxed images requires scikit-image to be installed (`pip install scikit-image`)
 Use pip3 instead of pip on some systems to be sure to install modules for python3
 """
-
 from ctypes import *
-import math
+import numpy as np
 import random
 import os
 
@@ -62,10 +60,7 @@ def network_height(net):
 
 
 def bbox2points(bbox):
-    """
-    From bounding box yolo format
-    to corner points cv2 rectangle
-    """
+    """From bounding box yolo format to corner points cv2 rectangle"""
     x, y, w, h = bbox
     xmin = int(round(x - (w / 2)))
     xmax = int(round(x + (w / 2)))
@@ -186,9 +181,7 @@ def non_max_suppression_fast(detections, overlap_thresh):
     return [detections[i] for i in pick]
 
 def remove_negatives(detections, class_names, num):
-    """
-    Remove all classes with 0% confidence within the detection
-    """
+    """Remove all classes with 0% confidence within the detection"""
     predictions = []
     for j in range(num):
         for idx, name in enumerate(class_names):
@@ -200,9 +193,7 @@ def remove_negatives(detections, class_names, num):
 
 
 def remove_negatives_faster(detections, class_names, num):
-    """
-    Faster version of remove_negatives (very useful when using yolo9000)
-    """
+    """Faster version of remove_negatives (very useful when using yolo9000)"""
     predictions = []
     for j in range(num):
         if detections[j].best_class_idx == -1:
@@ -215,9 +206,7 @@ def remove_negatives_faster(detections, class_names, num):
 
 
 def detect_image(network, class_names, image, thresh=.5, hier_thresh=.5, nms=.45):
-    """
-        Returns a list with highest confidence class and their bbox
-    """
+    """Returns a list with highest confidence class and their bbox"""
     pnum = pointer(c_int(0))
     predict_image(network, image)
     detections = get_network_boxes(network, image.w, image.h,

@@ -4,11 +4,9 @@ import datetime as dt
 import logging
 import os.path
 from threading import Thread, RLock
-
 from zeep.client import Client, CachingClient, Settings
 from zeep.wsse.username import UsernameToken
 import zeep.helpers
-
 from onvif.exceptions import ONVIFError
 from onvif.definition import SERVICES
 

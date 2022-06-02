@@ -79,8 +79,7 @@ class GstServer(GstRtspServer.RTSPServer):
 		self.factory.set_permissions(permissions)
 		self.server.attach(None)
 		cur_ip = get_ip_address('eth0')
-		# cur_ip = "192.168.88.24"
-		# print(cur_ip)
+		print("current ip : ", cur_ip)
 		print('#Gst Server: rtsp://admin:tmzkdl123@{}:{}{}'.format(cur_ip, port, sub_dir))
 
 	def run(self):
